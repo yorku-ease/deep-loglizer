@@ -7,7 +7,7 @@ import argparse
 from torch.utils.data import DataLoader
 
 from deeploglizer.models import CNN
-from deeploglizer.common.dataloader import load_sessions, log_dataset
+from deeploglizer.common.dataloader import load_HDFS, log_dataset, load_OpenStack
 from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.utils import seed_everything, dump_final_results, dump_params
 
@@ -25,7 +25,7 @@ parser.add_argument("--dataset", default="HDFS", type=str)
 parser.add_argument(
     "--data_dir", default="../data/processed/HDFS_100k/hdfs_1.0_tar", type=str
 )
-parser.add_argument("--window_size", default=10, type=int)
+parser.add_argument("--window_size", default=5, type=int)
 parser.add_argument("--stride", default=1, type=int)
 
 ##### Input params
@@ -42,9 +42,9 @@ parser.add_argument("--min_token_count", default=1, type=int)
 
 ##### Training params
 parser.add_argument("--epoches", default=100, type=int)
-parser.add_argument("--batch_size", default=1024, type=int)
-parser.add_argument("--learning_rate", default=0.01, type=float)
-parser.add_argument("--patience", default=3, type=int)
+parser.add_argument("--batch_size", default=512, type=int)
+parser.add_argument("--learning_rate", default=1, type=float)
+parser.add_argument("--patience", default=20, type=int)
 
 ##### Others
 parser.add_argument("--random_seed", default=42, type=int)
@@ -54,10 +54,18 @@ params = vars(parser.parse_args())
 
 model_save_path = dump_params(params)
 
+struct_log = '../../log-anomaly-benchmark/OpenStack_structured/OpenStack_main_structured.csv' # The structured log file
+label_file = '../../log-anomaly-benchmark/processed/datetime.csv' # The anomaly label file
+
+# struct_log='../../log-anomaly-benchmark/OpenStack_structured/HDFS.log_structured.csv'
+# label_file='../../HDFS_v1/preprocessed/anomaly_label.csv'
+
 
 if __name__ == "__main__":
     seed_everything(params["random_seed"])
-    session_train, session_test = load_sessions(data_dir=params["data_dir"])
+    session_train, session_test = load_OpenStack(log_file=struct_log, label_file=label_file, test_ratio=0.5, random_partition=True)
+    # session_train, session_test = load_HDFS(log_file=struct_log, label_file=label_file, test_ratio=0.5)
+
     ext = FeatureExtractor(**params)
 
     session_train = ext.fit_transform(session_train)

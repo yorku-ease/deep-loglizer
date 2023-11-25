@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from deeploglizer.models import LSTM
 from deeploglizer.common.preprocess import FeatureExtractor
-from deeploglizer.common.dataloader import load_sessions, log_dataset
+from deeploglizer.common.dataloader import load_OpenStack, log_dataset, load_HDFS
 from deeploglizer.common.utils import seed_everything, dump_final_results, dump_params
 
 
@@ -56,11 +56,18 @@ params = vars(parser.parse_args())
 
 model_save_path = dump_params(params)
 
+# struct_log = '../../log-anomaly-benchmark/OpenStack_structured/OpenStack_main_structured.csv' # The structured log file
+# label_file = '../../log-anomaly-benchmark/processed/datetime.csv' # The anomaly label file
+
+struct_log='../../log-anomaly-benchmark/OpenStack_structured/HDFS.log_structured.csv'
+label_file='../../HDFS_v1/preprocessed/anomaly_label.csv'
+
 
 if __name__ == "__main__":
     seed_everything(params["random_seed"])
 
-    session_train, session_test = load_sessions(data_dir=params["data_dir"])
+    # session_train, session_test = load_OpenStack(log_file=struct_log, label_file=label_file, test_ratio=0.5, random_partition=True)
+    session_train, session_test = load_HDFS(log_file=struct_log, label_file=label_file, test_ratio=0.5)
 
     ext = FeatureExtractor(**params)
 

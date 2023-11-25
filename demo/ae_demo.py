@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from deeploglizer.models import AutoEncoder
 from deeploglizer.common.preprocess import FeatureExtractor
-from deeploglizer.common.dataloader import load_sessions, log_dataset
+from deeploglizer.common.dataloader import load_sessions, log_dataset, load_OpenStack
 from deeploglizer.common.utils import seed_everything, dump_params, dump_final_results
 
 
@@ -32,7 +32,7 @@ parser.add_argument("--stride", default=1, type=int)
 ##### Input params
 parser.add_argument("--feature_type", default="sequentials", type=str, choices=["sequentials", "semantics"])
 parser.add_argument("--use_tfidf", action="store_true")
-parser.add_argument("--max_token_len", default=50, type=int)
+parser.add_argument("--max_token_len", default=100, type=int)
 parser.add_argument("--min_token_count", default=1, type=int)
 # Uncomment the following to use pretrained word embeddings. The "embedding_dim" should be set as 300
 # parser.add_argument(
@@ -42,7 +42,7 @@ parser.add_argument("--min_token_count", default=1, type=int)
 ##### Training params
 parser.add_argument("--epoches", default=100, type=int)
 parser.add_argument("--batch_size", default=1024, type=int)
-parser.add_argument("--learning_rate", default=0.01, type=float)
+parser.add_argument("--learning_rate", default=1e-4, type=float)
 parser.add_argument("--anomaly_ratio", default=0.1, type=float)
 parser.add_argument("--patience", default=3, type=int)
 
@@ -55,11 +55,16 @@ params = vars(parser.parse_args())
 
 model_save_path = dump_params(params)
 
+struct_log = '../../log-anomaly-benchmark/OpenStack_structured/OpenStack_main_structured.csv' # The structured log file
+label_file = '../../log-anomaly-benchmark/processed/datetime.csv' # The anomaly label file
+
 
 if __name__ == "__main__":
     seed_everything(params["random_seed"])
 
-    session_train, session_test = load_sessions(data_dir=params["data_dir"])
+    session_train, session_test = load_OpenStack(log_file=struct_log, label_file=label_file, test_ratio=0.5, random_partition=True)
+
+    
     ext = FeatureExtractor(**params)
 
     session_train = ext.fit_transform(session_train)

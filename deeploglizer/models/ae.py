@@ -47,7 +47,7 @@ class AutoEncoder(ForcastBasedModel):
             hidden_size=self.hidden_size,
             num_layers=num_layers,
             batch_first=True,
-            bidirectional=(self.num_directions == 2),
+            bidirectional=(self.num_directions == 2)
         )
 
         self.encoder = nn.Linear(

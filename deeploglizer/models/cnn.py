@@ -32,6 +32,7 @@ class CNN(ForcastBasedModel):
             use_tfidf=use_tfidf,
             embedding_dim=embedding_dim,
             freeze=freeze,
+            patience=4,
             gpu=gpu,
         )
         num_labels = meta_data["num_labels"]
